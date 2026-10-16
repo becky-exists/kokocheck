@@ -1,0 +1,13 @@
+services:
+  review:
+    build: .
+    init: true
+    ports:
+      - "127.0.0.1:4391:4391"
+    environment:
+      KOKOCHECK_PUBLIC_URL: "${KOKOCHECK_PUBLIC_URL:-${FR_PUBLIC_URL:-http://localhost:4391}}"
+    volumes:
+      - review-data:/data
+    restart: unless-stopped
+volumes:
+  review-data:

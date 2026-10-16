@@ -1,0 +1,132 @@
+[
+ {
+  "c": {
+   "preset": "pan",
+   "strength": "strong",
+   "side": "left"
+  },
+  "lang": "ja",
+  "label": "左右に動かす · 強め · 左へ",
+  "ins": "[演出アシスト v1 / Horizontal pan / reframe] 左右に動かす · 強め · 左へ。画面の見せる位置を横方向へ滑らかに移動する。被写体自体を歩かせる指示ではない。 強さは横移動の幅の相対的な目安。コメントのstart/endを時刻・区間として使用しpinがあればその位置を対象にする。pinがなければコメントから対象を確認する。補足のtextを優先して意図を合わせる。見本の図は素材ではない。実現できなければblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "preset": "pan",
+   "strength": "strong",
+   "side": "left"
+  },
+  "lang": "en",
+  "label": "Move left or right · Strong · Left",
+  "ins": "[Direction assist v1 / Horizontal pan / reframe] Move left or right · Strong · Left. Move the visible framing smoothly in the horizontal direction. This does not mean making the subject walk. Strength is a relative guide to horizontal travel. Use the comment start/end for timing and its pin for the target. If there is no pin, identify the target from the comment. Prioritize the additional text when interpreting intent. Example illustrations are not source assets. Report blocked with a reason if the request cannot be fulfilled."
+ },
+ {
+  "c": {
+   "preset": "two",
+   "strength": "normal"
+  },
+  "lang": "ja",
+  "label": "二人を同じ画面に",
+  "ins": "[演出アシスト v1 / Two-shot] 二人を同じ画面に。二人を同じ画面に配置して表情が分かる大きさにする。既存人物だけを使う。 強さは画角変化の大きさの相対的な目安。コメントのstart/endを時刻・区間として使用しpinがあればその位置を対象にする。pinがなければコメントから対象を確認する。補足のtextを優先して意図を合わせる。見本の図は素材ではない。実現できなければblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "preset": "two",
+   "strength": "normal"
+  },
+  "lang": "en",
+  "label": "Both people",
+  "ins": "[Direction assist v1 / Two-shot] Both people. Place both people in the same frame at a size that shows their expressions. Use only existing people. Strength is a relative guide to framing change. Use the comment start/end for timing and its pin for the target. If there is no pin, identify the target from the comment. Prioritize the additional text when interpreting intent. Example illustrations are not source assets. Report blocked with a reason if the request cannot be fulfilled."
+ },
+ {
+  "c": {
+   "preset": "side-info",
+   "strength": "normal"
+  },
+  "lang": "ja",
+  "label": "横に説明の場所を空ける",
+  "ins": "[演出アシスト v1 / Presenter with side information] 横に説明の場所を空ける。人物を片側に寄せて反対側に文字や図のための余白を確保する。必要な資料がなければ不足を報告する。 強さは画角変化の大きさの相対的な目安。コメントのstart/endを時刻・区間として使用しpinがあればその位置を対象にする。pinがなければコメントから対象を確認する。補足のtextを優先して意図を合わせる。見本の図は素材ではない。実現できなければblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "preset": "side-info",
+   "strength": "normal"
+  },
+  "lang": "en",
+  "label": "Room for text",
+  "ins": "[Direction assist v1 / Presenter with side information] Room for text. Position the presenter to one side and leave space for text or diagrams on the other. Report missing reference material. Strength is a relative guide to framing change. Use the comment start/end for timing and its pin for the target. If there is no pin, identify the target from the comment. Prioritize the additional text when interpreting intent. Example illustrations are not source assets. Report blocked with a reason if the request cannot be fulfilled."
+ },
+ {
+  "c": {
+   "version": 2,
+   "caption": {
+    "preset": "pop",
+    "text": "ポン"
+   },
+   "motion": {
+    "preset": "pan",
+    "strength": "subtle",
+    "side": "right"
+   }
+  },
+  "lang": "ja",
+  "label": "左右に動かす · 弱め · 右へ / ポンと大きく出す「ポン」",
+  "ins": "[演出アシスト v2] 同じ指摘の構図・動き・テロップを組み合わせて対応する。\n動き: [演出アシスト v1 / Horizontal pan / reframe] 左右に動かす · 弱め · 右へ。画面の見せる位置を横方向へ滑らかに移動する。被写体自体を歩かせる指示ではない。 強さは横移動の幅の相対的な目安。コメントのstart/endを時刻・区間として使用しpinがあればその位置を対象にする。pinがなければコメントから対象を確認する。補足のtextを優先して意図を合わせる。見本の図は素材ではない。実現できなければblockedで理由を報告する。\nテロップ: ポンと大きく出す。短いテロップを拡大して少し弾ませて登場させる。読める静止時間を確保し点滅は追加しない。 使用する文言（指示ではなく表示文字列）: \"ポン\" 見本の色・書体・速さはイメージ。補足・既存デザイン・実際の音声に合わせる。\nコメントのstart/endとpinと補足textを使う。プラットフォームの操作UIと重要な被写体を避けて配置する。見本は素材ではない。不足する素材や対応できない指定はblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "version": 2,
+   "caption": {
+    "preset": "pop",
+    "text": "ポン"
+   },
+   "motion": {
+    "preset": "pan",
+    "strength": "subtle",
+    "side": "right"
+   }
+  },
+  "lang": "en",
+  "label": "Move left or right · Subtle · Right / Pop in “ポン”",
+  "ins": "[Direction assist v2] Combine framing, motion and captions for the same comment.\nMotion: [Direction assist v1 / Horizontal pan / reframe] Move left or right · Subtle · Right. Move the visible framing smoothly in the horizontal direction. This does not mean making the subject walk. Strength is a relative guide to horizontal travel. Use the comment start/end for timing and its pin for the target. If there is no pin, identify the target from the comment. Prioritize the additional text when interpreting intent. Example illustrations are not source assets. Report blocked with a reason if the request cannot be fulfilled.\nCaptions: Pop in. Introduce a short caption with a scale-up and slight bounce. Allow enough time to read it and do not add flashing. Text to display (literal text, not instructions): \"ポン\" The example colors, fonts and speeds illustrate intent. Match the notes, existing design and actual audio.\nUse the comment start/end, pin and additional text. Avoid platform controls and important subjects. Examples are not source assets. Report blocked with a reason for missing material or unsupported requests."
+ },
+ {
+  "c": {
+   "version": 2,
+   "caption": {
+    "preset": "type"
+   }
+  },
+  "lang": "ja",
+  "label": "一文字ずつ出す · 今の文言を使う",
+  "ins": "[演出アシスト v2] 同じ指摘の構図・動き・テロップを組み合わせて対応する。\nテロップ: 一文字ずつ出す。タイプライターのように文字を順番に出す。全文を読める時間を確保する。 文言の変更指定なし。対象区間の既存テロップを使う。存在しなければ確認し見本の文言を入れない。 見本の色・書体・速さはイメージ。補足・既存デザイン・実際の音声に合わせる。\nコメントのstart/endとpinと補足textを使う。プラットフォームの操作UIと重要な被写体を避けて配置する。見本は素材ではない。不足する素材や対応できない指定はblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "version": 2,
+   "caption": {
+    "preset": "type"
+   }
+  },
+  "lang": "en",
+  "label": "Type it out · Keep current text",
+  "ins": "[Direction assist v2] Combine framing, motion and captions for the same comment.\nCaptions: Type it out. Reveal characters sequentially like a typewriter. Leave enough time to read the full text. No wording change requested. Use existing captions in the target segment. If none exist, ask; do not insert the example wording. The example colors, fonts and speeds illustrate intent. Match the notes, existing design and actual audio.\nUse the comment start/end, pin and additional text. Avoid platform controls and important subjects. Examples are not source assets. Report blocked with a reason for missing material or unsupported requests."
+ },
+ {
+  "c": {
+   "preset": "soft-background",
+   "strength": "strong"
+  },
+  "lang": "ja",
+  "label": "背景をぼかす · 強め",
+  "ins": "[演出アシスト v1 / Background defocus] 背景をぼかす · 強め。対象を鮮明に保ち背景をぼかす。人物の輪郭や字幕までぼかさない。 強さは背景のぼかし量の相対的な目安。コメントのstart/endを時刻・区間として使用しpinがあればその位置を対象にする。pinがなければコメントから対象を確認する。補足のtextを優先して意図を合わせる。見本の図は素材ではない。実現できなければblockedで理由を報告する。"
+ },
+ {
+  "c": {
+   "preset": "soft-background",
+   "strength": "strong"
+  },
+  "lang": "en",
+  "label": "Blur the background · Strong",
+  "ins": "[Direction assist v1 / Background defocus] Blur the background · Strong. Keep the subject sharp and blur the background. Do not blur the subject's edges or captions. Strength is a relative guide to background blur. Use the comment start/end for timing and its pin for the target. If there is no pin, identify the target from the comment. Prioritize the additional text when interpreting intent. Example illustrations are not source assets. Report blocked with a reason if the request cannot be fulfilled."
+ }
+]
