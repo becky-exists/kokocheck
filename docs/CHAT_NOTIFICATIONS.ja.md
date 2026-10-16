@@ -103,7 +103,7 @@ npm run setup:claude -- --project ANOTHER_REVIEW_UUID --data-dir .data --lang ja
 npm run setup:claude -- --project REVIEW_UUID --data-dir .data --lang ja --with-agent-tools
 ```
 
-既存の `frame-review-mcp-server`（依頼の取得・作業権の更新と手放し・動画の取得・修正版の登録）が同じMCP設定に加わります。**これは管理キーの権限をその会話に渡すことと同じです。** 道具はこのチャンネルのレビューに限らず そのデータディレクトリの全レビューを扱えます。自分の動画だけを置いたデータディレクトリで使うか 信頼する会話にだけ付けてください。`KOKOCHECK_MCP_ALLOWED_DIRS` で 動画を読み書きできるフォルダを絞れます（[INTEGRATION.md](INTEGRATION.md)）。
+既存の `frame-review-mcp-server`（依頼の取得・作業権の更新と手放し・動画の取得・修正版の登録）が同じMCP設定に加わります。**これは管理キーの権限をその会話に渡すことと同じです。** 道具はこのチャンネルのレビューに限らず そのデータディレクトリの全レビューを扱えます。自分の動画だけを置いたデータディレクトリで使うか 信頼する会話にだけ付けてください。`KOKOCHECK_MCP_ALLOWED_DIRS` で 動画を読み書きできるフォルダを絞れます（[INTEGRATION.md](INTEGRATION.ja.md)）。
 
 ### Claudeへの配送と読み取り
 

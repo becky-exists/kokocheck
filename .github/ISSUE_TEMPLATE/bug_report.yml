@@ -1,0 +1,58 @@
+name: Bug report / 不具合
+description: Something does not work as described. / 動かない、期待と違う
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not attach videos, share links, admin keys, `.data/` or `.env`. Reproduce with the generated demo (`npm run demo`) when you can.
+        動画・共有リンク・管理キー・`.data/`・`.env` は貼らないでください。できれば `npm run demo` の試験映像で再現してください。
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce / 再現手順
+      placeholder: "1. Open the review\n2. Pause at 0:04 and add a pin\n3. ..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual / 期待した動きと実際の動き
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How you run it / 動かし方
+      options: [Docker Compose, From source (npm run dev), From source (npm start)]
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and version / OS とバージョン
+      placeholder: macOS 15.x, Ubuntu 24.04, ...
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version (or Docker image) / Node.js のバージョン
+      placeholder: "node -v"
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device / ブラウザと端末
+      placeholder: Safari on iPhone, Chrome 13x on desktop, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: connection
+    attributes:
+      label: AI connection involved? / AI 接続は関係しますか
+      options: ["No", Claude Code (Channels), Codex (codex queue), MCP server, Runner / adapter]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots / ログや画面
+      description: Remove keys, personal paths and client footage first. / 鍵・個人のパス・実案件の映像は消してください。

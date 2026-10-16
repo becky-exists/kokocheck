@@ -116,7 +116,7 @@ By default the channel offers only `frame_read_notified_request`, a read-only to
 npm run setup:claude -- --project REVIEW_UUID --data-dir .data --with-agent-tools --lang en
 ```
 
-**This grants admin-equivalent access to the conversation.** Those tools can claim, renew/release work, download videos and publish revisions for every review in that data directory, not just the channel's reviews. Use a trusted conversation and an appropriately isolated data directory. Restrict local file paths with `KOKOCHECK_MCP_ALLOWED_DIRS`; see [Security](../SECURITY.md) and [Integration (Japanese)](INTEGRATION.md). Adding tools does not change the notification's read/report-only instruction.
+**This grants admin-equivalent access to the conversation.** Those tools can claim, renew/release work, download videos and publish revisions for every review in that data directory, not just the channel's reviews. Use a trusted conversation and an appropriately isolated data directory. Restrict local file paths with `KOKOCHECK_MCP_ALLOWED_DIRS`; see [Security](../SECURITY.md) and [Integration](INTEGRATION.md). Adding tools does not change the notification's read/report-only instruction.
 
 ### Receiver behavior and limitations
 

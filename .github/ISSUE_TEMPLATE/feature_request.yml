@@ -1,0 +1,24 @@
+name: Feature request / 要望
+description: Suggest something that would make reviewing easier. / あると楽になること
+labels: [enhancement]
+body:
+  - type: textarea
+    id: situation
+    attributes:
+      label: What are you trying to do? / 何をしようとして困っていますか
+      description: The situation first, not the solution. / 解決案より先に、困っている場面を
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help? / どうなると助かりますか
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What do you do today? / 今はどうしていますか
+  - type: dropdown
+    id: who
+    attributes:
+      label: Who reviews in your case? / レビューするのは誰ですか
+      options: [Me, A teammate or client (not an engineer), An engineer, Other]

@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { randomBytes } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
@@ -8,6 +7,7 @@ import { z } from 'zod';
 import { resolveClaudeConfig } from '../server/claude-notify.js';
 import { loadNotifyConfig } from '../server/notify.js';
 import { env } from '../server/env.js';
+import { packageRoot } from '../server/package-root.js';
 
 const { values } = parseArgs({ options: {
   lang: { type: 'string', default: 'en' }, project: { type: 'string' }, 'data-dir': { type: 'string' }, port: { type: 'string' }, channel: { type: 'string', default: 'review' },
@@ -17,7 +17,7 @@ const lang = z.enum(['en','ja']).parse(values.lang);
 const projectId = z.string().uuid().parse(values.project);
 const channelName = z.string().regex(/^[a-z0-9][a-z0-9-]{0,39}$/, 'Channel names use lowercase letters, digits and hyphens').parse(values.channel);
 const dataDir = resolve(values['data-dir'] ?? '.data');
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const root = packageRoot(import.meta.url);
 const main = resolve(root, 'build/server/claude-channel-main.js');
 const mcpMain = resolve(root, 'build/server/mcp.js');
 if (!existsSync(main) || (values['with-agent-tools'] && !existsSync(mcpMain))) throw new Error('Run npm run build first.');

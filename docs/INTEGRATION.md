@@ -1,12 +1,49 @@
-# Codex / Claude Code 接続
+# Connect Codex and Claude Code
 
-環境変数は `KOKOCHECK_*` です（旧名 `FR_*` も読みます。両方あれば新しい名前が優先）。MCPのサーバー名（`frame-review-channel` `frame-review-mcp-server`）と道具名（`frame_*`）は、すでにつないでいるCodex・Claude Codeの設定と承認を壊さないため、意図して変えていません。
+[日本語](INTEGRATION.ja.md)
 
-サーバーを起動し、`npm run build`を済ませてから設定します。以下の`/absolute/kokocheck`は実際のインストール先に置き換えてください。設定例の提供のみで、既存のユーザー設定は変更していません。
+KokoCheck exposes review requests to the AI that produces your video in three ways. Pick what you need; ordinary startup never invokes AI.
 
-## 共通MCP
+| Way | What it does | Use it for |
+|---|---|---|
+| Chat notification | Tells the original Codex / Claude Code conversation that a request was saved. Read and report only. | Getting the request in front of the conversation that made the video |
+| MCP server | Lets that conversation list, claim, download, publish and report. | Letting the AI do the work in the same conversation |
+| Runner + adapter | Claims a request and runs an adapter you chose, unattended. | Automation. May consume real AI allowance. |
 
-CodexのMCP設定例:
+Run the server from source (`npm run dev`, or `npm run build && npm start`), not Docker, for chat notifications. Replace `/absolute/kokocheck` below with your install path. These are examples only: nothing here changes your existing user settings.
+
+## Chat notification
+
+Notifications ask the receiver to read the saved request and report it. They never start editing. Start with an isolated review in `testOnly` mode (acknowledgement only), then switch a real review to `testOnly: false`. Full setup, limits and failure states: [chat notifications](CHAT_NOTIFICATIONS.md).
+
+**Claude Code** (Channels, interactive session):
+
+```sh
+npm run build
+npm run setup:claude -- --project REVIEW_UUID --data-dir .data --lang en
+```
+
+Then run the command it prints, in your production project directory:
+
+```sh
+claude --resume --mcp-config /absolute/kokocheck/.data/claude-channel.mcp.json --dangerously-load-development-channels server:frame-review-channel
+```
+
+**Codex** (`codex queue`): create `.data/notify-codex.json`. The next request is delivered to that thread; no restart is needed.
+
+```json
+{
+  "version": 1,
+  "executable": "/absolute/path/to/codex",
+  "bindings": {
+    "REVIEW_UUID": { "threadId": "CODEX_THREAD_UUID", "testOnly": true, "lang": "en" }
+  }
+}
+```
+
+## MCP server
+
+Register the MCP server so the conversation can claim and publish. Codex (`config.toml`):
 
 ```toml
 [mcp_servers.kokocheck]
@@ -18,7 +55,7 @@ KOKOCHECK_DATA_DIR = "/absolute/kokocheck/.data"
 KOKOCHECK_SERVER_URL = "http://localhost:4391"
 ```
 
-Claude CodeのMCP設定例:
+Claude Code:
 
 ```json
 {
@@ -35,35 +72,35 @@ Claude CodeのMCP設定例:
 }
 ```
 
-同一マシンではMCPがサーバーと同じ`.data/access.json`を読みます。別マシンのMCPでは`KOKOCHECK_ADMIN_TOKEN`を安全な環境変数経由で渡します。実キーをリポジトリに保存しないでください。stdio MCPなので、レビュー閲覧者にMCPポートを公開する必要はありません。
+On the same machine the MCP server reads the same `.data/access.json` as the server. For an MCP server on another machine, pass `KOKOCHECK_ADMIN_TOKEN` through a secure environment variable and never store the real key in a repository. It is a stdio MCP server, so no MCP port is exposed to reviewers.
 
-| ツール | 用途 |
+| Tool | Purpose |
 |---|---|
-| `frame_register_video` | MP4を送ってレビューURLを得る。生成元がある場合mode=source、sourceRefを付ける |
-| `frame_list_requests` | 未処理依頼をページ単位で取得 |
-| `frame_claim_request` | 依頼を排他取得。コメントと版情報・leaseTokenを受け取る |
-| `frame_renew_lease` | 処理中に30秒ごとに更新（有効期間120秒） |
-| `frame_get_evidence` | ピン付きの停止フレーム画像を見る |
-| `frame_download_video` | 元MP4を指定したローカルパスに取得（既存ファイル上書き不可） |
-| `frame_publish_revision` | 新MP4と各指摘の対応結果を登録 |
-| `frame_report_failure` | 処理できなかった理由を返す |
-| `frame_release_request` | 取得した依頼を自分で手放し 待たずに取得し直せる状態へ戻す（leaseToken必須） |
+| `frame_register_video` | Upload an MP4 and get a review URL. Use `mode=source` with `sourceRef` when a source project exists. |
+| `frame_list_requests` | List pending requests, paged. |
+| `frame_claim_request` | Claim a request exclusively. Returns the comments, version info and a `leaseToken`. |
+| `frame_renew_lease` | Renew every 30 seconds while working (lease lasts 120 seconds). |
+| `frame_get_evidence` | View the paused-frame image with the pin. |
+| `frame_download_video` | Save the source MP4 to a local path you choose (never overwrites an existing file). |
+| `frame_publish_revision` | Register the new MP4 and the outcome of each comment. |
+| `frame_report_failure` | Report why a request could not be handled. |
+| `frame_release_request` | Give a claimed request back so it can be claimed again without waiting (requires `leaseToken`). |
 
-MCPが読み書きする動画のフォルダは `KOKOCHECK_MCP_ALLOWED_DIRS`（PATHと同じ区切りの絶対パス）で絞れます。未設定なら制限しません。設定すると `frame_register_video` と `frame_publish_revision` の元ファイルは許可フォルダ内の実ファイル 保存先（`frame_download_video`）は許可フォルダ内の既存フォルダに限ります。シンボリックリンクは実体のパスで判定します。
+Restrict the folders MCP may read and write with `KOKOCHECK_MCP_ALLOWED_DIRS` (absolute paths separated like `PATH`). Unset means no restriction. When set, the source files of `frame_register_video` and `frame_publish_revision` must be real files inside an allowed folder, and the destination of `frame_download_video` must be an existing allowed folder. Symlinks are judged by their real path.
 
-登録時の報告は 範囲が動画の長さを少し超えても受け付けます（修正前・修正後とも終わりを動画の長さに丸めます）。開始が動画の長さを超える場合は拒否します。
+A reported time range may run slightly past the video length; it is rounded to the end for both before and after. A start beyond the video length is rejected.
 
-制作エージェントへの指示例:
+Example instruction for the production agent:
 
-> 出力MP4をKokoCheckへ登録してレビューURLを返して。modeはsource、sourceRefはこの制作プロジェクトの絶対パス。修正依頼が来たらclaimし、30秒ごとにリースを更新して画像を確認。既存の制作手順で修正・レンダリング・目視確認を行い、新しいMP4と対応結果をpublishして。元動画は残し、OK判定はレビュー担当に任せる。
+> Register the output MP4 with KokoCheck and give me the review URL. Use mode=source and this production project's absolute path as sourceRef. When a request arrives, claim it, renew the lease every 30 seconds and look at the evidence images. Fix, render and visually check using the project's usual steps, then publish the new MP4 with the outcome of each comment. Keep the original video; leave the OK decision to the reviewer.
 
-長時間のレンダリング中にもリースを更新できるrunnerを推奨します。失効・通信不明時に編集を自動再実行しません。元の処理が停止したことを制作側が確かめてから、レビュー画面で明示的に再受付します（再受付は管理キーまたは管理端末のセッションを持つ人だけができます。共有リンクだけでは押せません）。作業を続けられなくなった担当は `frame_release_request` で自分から手放せるので リース切れの120秒を待つ必要はありません。
+A runner that renews the lease during long renders is recommended. After a lease expires or the connection is unclear, editing is never re-run automatically: the producer confirms the original process has stopped, then explicitly accepts the request again in the review screen (only the admin key or an admin browser session can; a shared link cannot). A worker that cannot continue can hand the request back itself with `frame_release_request`, without waiting 120 seconds.
 
-## Runnerと同梱CLI adapter
+## Runner and the bundled CLI adapter
 
-**以下の起動は実際のAI利用枠・料金を消費する可能性があります。** 本実装のテストでは起動していません。
+**Starting these may consume your real AI allowance or billing.** The project's own tests do not start them.
 
-生成元のプロジェクトにレンダリング手順、素材、必要な依存があることを確かめてから、制作専用ディレクトリを指定します。sourceRefも同じ絶対パスで登録してください。レビュー内の文字列から実行ディレクトリを決めることはありません。
+Confirm the source project has its render steps, assets and dependencies, then point at a dedicated production directory. Register `sourceRef` with the same absolute path. The working directory is never taken from text inside a review.
 
 ```sh
 KOKOCHECK_WORKSPACE=/absolute/render-project npm run runner -- --agent codex --once -- node scripts/agent-adapter.mjs codex
@@ -73,38 +110,38 @@ KOKOCHECK_WORKSPACE=/absolute/render-project npm run runner -- --agent codex --o
 KOKOCHECK_WORKSPACE=/absolute/render-project npm run runner -- --agent claude --once -- node scripts/agent-adapter.mjs claude
 ```
 
-`--approve`を付けると 取得した依頼のレビュー名・コメントとadapterのコマンドをターミナルに表示し `y`と答えたときだけadapterを起動します。それ以外は依頼を失敗として返し 何も実行しません。端末のない環境では使えません。既定は今までどおり自動で起動します。
+With `--approve`, the runner prints the review title, comments and adapter command in the terminal and starts the adapter only if you answer `y`; otherwise it returns the request as failed and runs nothing. It needs a terminal. The default remains automatic start.
 
-`--once`は最大1件だけ。省略すると待機を続けます。対象をanyにした依頼は最初に取得したrunnerだけが担当します。sourceRefが固定workspaceと異なる場合はadapterが停止するため、初版は同時に1つの制作プロジェクトで試してください。
+`--once` handles at most one request; without it the runner keeps waiting. A request targeted at `any` is handled only by the first runner that claims it. The adapter stops if `sourceRef` differs from the fixed workspace, so try one production project at a time first.
 
-Codexはworkspace-write、Claudeはdefault permission modeを使います。バイパス・自動承認オプションは付けません。許可が必要な処理は停止し得るため、そのプロジェクトの通常の権限設定で許可された作業だけを行わせます。adapterは信頼するローカルプログラムとして実行され、OSレベルの隔離を提供しません。実機のCLIログイン・描画環境・AI編集品質は別途検証が必要です。
+Codex runs with workspace-write and Claude with the default permission mode. No bypass or auto-approve option is added, so a step that needs permission may stop; only work allowed by that project's normal permission settings is done. The adapter runs as a trusted local program with no OS-level isolation. Real CLI sign-in, the render environment and AI editing quality need separate verification.
 
-## 独自adapterの契約
+## Your own adapter
 
 ```sh
 npm run runner -- --agent codex --once -- /absolute/your-adapter
 ```
 
-stdinにJSONを渡します。
+The runner passes JSON on stdin:
 
 - `protocolVersion: 1`
 - `projectId`, `title`, `mode`, `sourceRef`
-- `version`: ベース版の情報
-- `request.comments`: 依頼確定時に固定した指摘
-- `evidence`: `{ commentId, path }[]` — ピン付きJPEGのローカルパス
-- `inputVideoPath`: ダウンロード済み元MP4
-- `outputDirectory`: この実行専用の出力先
+- `version`: info on the base version
+- `request.comments`: the comments frozen when the request was made
+- `evidence`: `{ commentId, path }[]`, local paths of the pinned JPEGs
+- `inputVideoPath`: the downloaded source MP4
+- `outputDirectory`: an output folder for this run only
 
-stdoutにはJSONを1つだけ返します。ログはstderrへ。runnerは管理キーとleaseTokenをJSONに含めず、adapterの`KOKOCHECK_ADMIN_TOKEN`環境変数も外します。
+Return exactly one JSON object on stdout; write logs to stderr. The runner keeps the admin key and `leaseToken` out of the JSON and removes `KOKOCHECK_ADMIN_TOKEN` from the adapter's environment.
 
 ```json
 {
   "videoPath": "/absolute/job/revised.mp4",
-  "summary": "字幕位置と音量を調整しました",
+  "summary": "Adjusted caption position and volume",
   "changes": [
     {
-      "commentId": "依頼内の実際のコメントID",
-      "summary": "字幕を下へ移動",
+      "commentId": "an actual comment ID from the request",
+      "summary": "Moved the caption down",
       "outcome": "addressed",
       "before": { "start": 2, "end": 4 },
       "after": { "start": 2.5, "end": 4.5 }
@@ -113,56 +150,27 @@ stdoutにはJSONを1つだけ返します。ログはstderrへ。runnerは管理
 }
 ```
 
-全指摘を各1件ずつ返してください。対応不可は`outcome: "blocked"`。対応する時間が不明・削除された区間は`after: null`。beforeは元指摘の全範囲を含む必要があります。変更報告は制作側の主張であり、完了承認ではありません。
+Return exactly one entry per comment. Use `outcome: "blocked"` when you cannot address it, and `after: null` when the corresponding time is unknown or the section was removed. `before` must cover the whole range of the original comment. A change report is the producer's claim, not an approval of completion.
 
-runnerのジョブ用フォルダは 管理キーとDBがあるデータディレクトリの外（既定はOSの一時フォルダ内の本人専用フォルダ 変更は`KOKOCHECK_JOBS_DIR`）に作り 7日を過ぎたものを起動時に消します。これはサンドボックスではありません。adapterは同じOSユーザーで動くため そのユーザーが読めるファイルは読めます。管理キーは環境変数とJSONには渡しません。
+Job folders live outside the data directory that holds the admin key and the database (by default a private folder under the OS temp directory; change it with `KOKOCHECK_JOBS_DIR`), and anything older than 7 days is removed at startup. This is not a sandbox: the adapter runs as the same OS user and can read any file that user can. The admin key is not passed through the environment or JSON.
 
-runnerは最大30分、stdout最大1MB。リース喪失・終了時は制作プロセスの停止を試みます。別デーモンに投げたジョブはプロセスグループでは止められないため、独自adapterが明示的にキャンセルする必要があります。
+The runner allows at most 30 minutes and 1 MB of stdout. On lease loss or exit it tries to stop the production process. A job handed to a separate daemon cannot be stopped by process group, so a custom adapter must cancel it explicitly.
 
-契約だけ試す場合は`KOKOCHECK_EXAMPLE_VIDEO=/absolute/generated/revised.mp4`と`node scripts/example-adapter.mjs`を使用します。このサンプルは編集を実行しません。
+To test only the contract, use `KOKOCHECK_EXAMPLE_VIDEO=/absolute/generated/revised.mp4` with `node scripts/example-adapter.mjs`. This sample performs no editing.
 
-参考: [Codex MCP](https://developers.openai.com/codex/mcp/)、[Claude Code MCP](https://code.claude.com/docs/en/mcp)。設定画面・CLIの差異は使用版のヘルプを優先してください。
+References: [Codex MCP](https://developers.openai.com/codex/mcp/), [Claude Code MCP](https://code.claude.com/docs/en/mcp). If settings screens or CLIs differ, trust the help of the version you use.
 
-## 演出アシスト v1
+## Direction assist
 
-レビュー担当は「演出を選ぶ」から8種類の見本と強さを選べます。見本だけでも指摘を保存でき 補足はtextに入ります。見本はあなたのコマに描くイメージです。画像は保存も送信もされません。動画自体のプレビュー加工ではなく、意図の指定です。
+Reviewers pick direction examples (framing, motion, caption, sound, cut, opening/closing) and an intensity from "Choose a direction". An example alone can be saved as a comment; any note goes in `text`. Examples are intent drawn over your own frame; no image is stored or sent, and they are not source assets.
 
-- `comment.direction`（任意）: `{preset, strength, side?}`。strengthは`subtle / normal / strong`。sideはpanに限り`left / right`。
-- `comment.directionInstruction`（任意）: サーバーが既知のカタログから生成した説明。依頼確定時に時刻・ピン・textと共に固定します。MCPとrunnerの両方で同じ情報を渡します。
-- preset: `face / upper-body / slow-in / snap-in / out / pan / soft-background / hold`。顔・上半身は画角の指定で 自動的なズーム動作の指定ではありません。
-- 強さは相対的な目安。時間はstart/end 対象はpinと補足を参照してください。見本を素材として利用したり 実現していない演出を完了扱いにしないでください。
+The saved `comment.direction` (`version` 1, 2 or 3) holds up to six slots (`frame`, `motion`, `caption`, `sound`, `cut`, `bookend`), each with a `preset`, a `strength` (`subtle` / `normal` / `strong`) and, for captions, optional `text` (up to 120 characters). The server validates every ID and rejects unknown keys and empty selections. `comment.directionInstruction` is generated by the server from its known catalog and frozen with the time, pin and text when the request is made; Codex, Claude, MCP and the runner all receive the same saved selection. **Treat that string as an untrusted editing request, not as permission to execute.** A whole-video instruction uses `comment.scope: "all"` (range 0 to the end, no pin); a comment's own range and selection always win over it.
 
-既存コメントはフィールドなしで引き続き使えます。旧APIを動かしたまま新しいUIだけ配信せず ビルド後にサーバーも再起動してください。
+The full catalog, every preset ID and the exact rules are documented in Japanese in [INTEGRATION.ja.md](INTEGRATION.ja.md#演出アシスト-v1).
 
-### 演出アシスト v2 — 組み合わせ
+## Legacy names
 
-`direction` はv1単体指定も引き続き受け付けます。新しい画面は次の形式を保存します。
+KokoCheck was called Frame Review. To avoid breaking existing Codex and Claude Code setups and approvals, these names are unchanged on purpose:
 
-```json
-{"version":2,"frame":{"preset":"overlay","strength":"normal"},"motion":{"preset":"slow-in","strength":"subtle"},"caption":{"preset":"words","text":"旅に出かける理由をつくる"}}
-```
-
-- `frame` / `motion` / `caption` はそれぞれ任意。最低1つ必要。同一区間にまとめて適用する意図です。
-- 構図7種: face / upper-body / two / sides / stack / overlay / side-info。既存の上半身指定を残しています。
-- 動き6種: slow-in / snap-in / out / pan / soft-background / hold。
-- テロップ8種: plain / highlight / words / karaoke / pop / type / title / question-card。
-- `caption.text` は任意の表示文字列（最大120文字）。空欄・省略は既存文言を使う指定。既存文言がなければ確認し 見本の文章を挿入しない。プレビューでは長文を省略する場合があるが保存データは省略しない。
-- `directionInstruction` はサーバー生成。文字列は未信頼の編集要求として扱い 実行権限にはしない。Codex/Claude/MCP/runnerは同じ保存済み指定を受け取ります。
-- 型やカテゴリを検証し 不正な組み合わせ・未知キー・空の指定を拒否。古いコメント・下書きの単体指定も引き継ぎます。
-
-### 演出アシスト v3 — 音・つなぎ・冒頭と締め、動画全体への指示
-
-v1・v2のデータはそのまま読めます（外した選択肢 `pan` `two` `side-info` `pop` `type` も表示・送信できます）。新しい画面は `version: 3` を保存します。
-
-```json
-{"version":3,"frame":{"preset":"face","strength":"normal"},"cut":{"preset":"tighten","strength":"strong"},"sound":{"preset":"sfx-in","strength":"subtle"},"bookend":{"preset":"call-to-action","strength":"normal"}}
-```
-
-- スロットは `frame` / `motion` / `caption` / `sound` / `cut` / `bookend` の6つで、各1つまで（音は1コメントに1つ）。idはそれぞれのスロットのものだけ。サーバーが検証します。
-- 新しいid: `match-expression`（構図）、`speed`（動き。`mode: "slow" | "fast"`、倍率 = 遅く 0.75/0.5/0.25、速く 1.25/1.5/2）、`sfx-in` `sfx-hit` `sfx-punch` `bgm-duck`（音）、`tighten` `keep-pause` `reframe` `beat-cut` `insert`（つなぎ）、`open-conclusion` `close-summary` `call-to-action` `loop-end`（冒頭と締め）、キャプション `reaction`。v2の束と単体指定では、これらは受け付けません。
-- `tighten` の強さは動画全体のテンポと同じ3段（subtle = やわらかく / normal = ふつう / strong = 攻める）。秒数は暫定の目安で、`directionInstruction` にも「目安」として入ります。
-- 「ここ」で選んだ `bookend` は、刻んだ時刻（comment.start）を入れる場所の目安として扱います。冒頭・末尾から離れていても動かさず、そのまま入れて対応を報告します（`blocked` にはしません）。
-- **動画全体への指示**: `comment.scope: "all"`。区間は 0〜末尾（`start: 0`、`end` は保存時に動画の長さ）、ピンなし。`direction` は省略できます。入れる場合は全体向けの項目だけ: `tempo`（`soft | normal | tight`）、`captionAll`（true）、`voiceFirst`（true）、`openClose`（`bookend` の4つのidを重複なく）。「ここ」のスロットとは混ぜられません。報告の `before` は、このコメントの start/end（0〜末尾）を使ってください。
-- **「ここ」は「全体」に勝つ**: コメントの区間・指定は、全体の指示より常に優先します。全体の指示はコメント区間の外に適用します。`scope: "all"` のコメントの `directionInstruction` の末尾に同じ一文が入ります（画面には出しません）。
-
-調査参照（2026-10-16）: [CapCut字幕分類](https://www.capcut.com/resource/types-of-captions) / [タイプライター](https://www.capcut.com/resource/typewriter-effects) / [YouTube構図例](https://blog.youtube/news-and-events/6-new-youtube-shorts-creation-tools/) / [TikTok Creative Guidance](https://ads.tiktok.com/business/creativecenter/quicktok/online/tiktok_creative_accelerator/pc/en)。公式の説明・掲載例から簡略化した型です。人気順位の調査ではありません。二人同画面・横の説明余白は本プロジェクト向けの提案です。第三者の動画やテンプレ素材は配布物に含めません。
+- MCP server names `frame-review-channel` and `frame-review-mcp-server`, and tool names `frame_*`.
+- Environment variables are `KOKOCHECK_*`. The old `FR_*` names still work, and the new name wins when both are set (for example `FR_DATA_DIR`, `FR_PUBLIC_URL`, `FR_RELEASE_DENYLIST`).

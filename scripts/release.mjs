@@ -8,11 +8,11 @@ import { homedir } from 'node:os';
 
 // Source distribution only. Never recursively copy the project root or data folders.
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const fixed = ['package.json', 'package-lock.json', 'README.md', 'README.ja.md', 'SECURITY.ja.md', 'LICENSE', 'CONTRIBUTING.md', 'SECURITY.md',
+const fixed = ['package.json', 'package-lock.json', 'README.md', 'README.ja.md', 'SECURITY.ja.md', 'LICENSE', 'CONTRIBUTING.md', 'CONTRIBUTING.ja.md', 'SECURITY.md',
   '.gitignore', '.dockerignore', '.env.example', 'Dockerfile', 'compose.yaml', 'index.html',
   'tsconfig.json', 'tsconfig.server.json', 'vite.config.ts'];
 const directories = { src: ['.ts', '.tsx', '.css'], server: ['.ts'], shared: ['.ts'],
-  scripts: ['.mjs', '.ts', '.py'], tests: ['.ts', '.json'], docs: ['.md', '.svg'], public: ['.svg', '.png'], '.github': ['.yml'] };
+  scripts: ['.mjs', '.ts', '.py'], tests: ['.ts', '.json'], docs: ['.md', '.svg', '.gif', '.png'], public: ['.svg', '.png'], '.github': ['.yml', '.md'] };
 const files = [...fixed];
 // Generic traces of a developer machine and credentials. Anything specific to the person releasing (their name, host,
 // company, private tools) is not written into the repository: it comes from a local file (see docs/RELEASE.md).
